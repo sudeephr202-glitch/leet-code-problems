@@ -1,0 +1,34 @@
+class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode ptr = dummy;
+
+        int carry = 0;
+      // loop while either list still has nodes
+        while (l1 != null || l2 != null) {
+            int sum = carry ;   // start sum with current carry
+
+            if (l1 != null) {
+                sum += l1.val;
+                l1 = l1.next;  // move to next node of l1
+            }
+
+            if (l2 != null) {
+                sum += l2.val;
+                l2 = l2.next; // move to next node of l2
+            }
+
+            carry = sum / 10;                   // new carry (0 or 1 for decimal digits)
+            ptr.next = new ListNode(sum % 10);  // digit to store in current node
+            ptr = ptr.next;                       // move pointer forward
+        }
+
+ // if there's remaining carry, add a final node
+        if (carry > 0) {
+            ptr.next = new ListNode(carry);
+        }
+
+        return dummy.next;  // skip dummy head
+    }
+
+}
