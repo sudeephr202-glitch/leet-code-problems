@@ -1,0 +1,83 @@
+import java.util.*;
+
+class Solution {
+
+    static class DSU {
+        int[] parent, rank;
+        DSU(int n) {
+            parent = new int[n + 1];
+            rank = new int[n + 1];
+            for (int i = 1; i <= n; i++) parent[i] = i;
+        }
+        int find(int x) {
+            if (parent[x] != x) parent[x] = find(parent[x]);
+            return parent[x];
+        }
+        void union(int a, int b) {
+            int ra = find(a), rb = find(b);
+            if (ra == rb) return;
+            if (rank[ra] < rank[rb]) parent[ra] = rb;
+            else if (rank[ra] > rank[rb]) parent[rb] = ra;
+            else { parent[rb] = ra; rank[ra]++; }
+        }
+    }
+
+    // c: number of stations (1..c)
+    // connections: undirected edges [u, v]
+    // queries: [type, x] where type=1 -> ask, type=2 -> x goes offline
+    public int[] processQueries(int c, int[][] connections, int[][] queries) {
+        int q = queries.length;
+
+        // 1) Build fixed components (graph connectivity never changes)
+        DSU dsu = new DSU(c);
+        for (int[] e : connections) dsu.union(e[0], e[1]);
+
+        // 2) Determine which stations are offline at the end (forward view)
+        boolean[] offline = new boolean[c + 1];
+        for (int[] qu : queries) if (qu[0] == 2) offline[qu[1]] = true;
+
+        // 3) Per-component TreeSet of online station ids (for smallest-online lookup)
+        @SuppressWarnings("unchecked")
+        TreeSet<Integer>[] compOnline = new TreeSet[c + 1];
+        for (int i = 1; i <= c; i++) compOnline[i] = new TreeSet<>();
+
+        boolean[] online = new boolean[c + 1];
+        for (int i = 1; i <= c; i++) {
+            if (!offline[i]) {
+                online[i] = true;                  // online at the end
+                compOnline[dsu.find(i)].add(i);
+            }
+        }
+
+        // 4) Process queries in reverse; collect answers to type=1
+        ArrayList<Integer> outRev = new ArrayList<>();
+        for (int i = q - 1; i >= 0; i--) {
+            int type = queries[i][0];
+            int x = queries[i][1];
+            int r = dsu.find(x);
+
+            if (type == 1) {
+                if (online[x]) {
+                    // If x is online, x resolves the check
+                    outRev.add(x);
+                } else {
+                    // Otherwise, smallest online id in its component (or -1)
+                    if (compOnline[r].isEmpty()) outRev.add(-1);
+                    else outRev.add(compOnline[r].first());
+                }
+            } else {
+                // type == 2 (reverse -> x comes online)
+                if (!online[x]) {
+                    online[x] = true;
+                    compOnline[r].add(x);
+                }
+            }
+        }
+
+        // 5) Reverse answers back to original order
+        Collections.reverse(outRev);
+        int[] ans = new int[outRev.size()];
+        for (int i = 0; i < outRev.size(); i++) ans[i] = outRev.get(i);
+        return ans;
+    }
+}
