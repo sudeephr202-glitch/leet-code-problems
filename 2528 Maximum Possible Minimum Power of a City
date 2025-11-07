@@ -1,0 +1,58 @@
+import java.util.*;
+
+class Solution {
+    public long maxPower(int[] stations, int r, int k) {
+        int n = stations.length;
+        long[] power = new long[n];
+        long[] diff = new long[n + 1];
+
+        // Step 1: Line sweep to calculate initial power of each city
+        for (int i = 0; i < n; i++) {
+            int left = Math.max(0, i - r);
+            int right = Math.min(n, i + r + 1);
+            diff[left] += stations[i];
+            if (right < n) diff[right] -= stations[i];
+        }
+
+        power[0] = diff[0];
+        for (int i = 1; i < n; i++) {
+            power[i] = power[i - 1] + diff[i];
+        }
+
+        // Step 2: Binary Search for maximum minimum power
+        long low = 0, high = (long)1e18, ans = 0;
+        while (low <= high) {
+            long mid = (low + high) / 2;
+            if (canAchieve(mid, power, r, k)) {
+                ans = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return ans;
+    }
+
+    private boolean canAchieve(long minPower, long[] power, int r, long k) {
+        int n = power.length;
+        long[] add = new long[n];
+        long curr = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (i > 0) curr += add[i];
+            long total = power[i] + curr;
+
+            if (total < minPower) {
+                long need = minPower - total;
+                if (need > k) return false;
+                k -= need;
+                curr += need;
+
+                int end = i + 2 * r + 1;
+                if (end < n) add[end] -= need;
+            }
+        }
+        return true;
+    }
+}
