@@ -1,0 +1,23 @@
+import java.util.*;
+
+class Solution {
+    public int minOperations(int[] nums) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        int ops = 0;
+
+        for (int x : nums) {
+            // Maintain a non-decreasing stack
+            while (!stack.isEmpty() && stack.peek() > x) {
+                stack.pop();
+            }
+
+            // Count a new distinct positive level
+            if (x > 0 && (stack.isEmpty() || stack.peek() < x)) {
+                stack.push(x);
+                ops++;
+            }
+        }
+
+        return ops;
+    }
+}
