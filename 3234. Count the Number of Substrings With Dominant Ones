@@ -1,0 +1,54 @@
+import java.util.*;
+
+class Solution {
+    public int numberOfSubstrings(String s) {
+        int n = s.length();
+        int[] pref1 = new int[n + 1];
+        for (int i = 0; i < n; i++) pref1[i + 1] = pref1[i] + (s.charAt(i) == '1' ? 1 : 0);
+
+        ArrayList<Integer> zeros = new ArrayList<>();
+        for (int i = 0; i < n; i++) if (s.charAt(i) == '0') zeros.add(i);
+
+        int Z = zeros.size();
+        int limit = (int) Math.sqrt(n) + 2;
+        long ans = 0;
+
+        for (int l = 0; l < n; l++) {
+            // first zero position >= l
+            int pos = Collections.binarySearch(zeros, l);
+            if (pos < 0) pos = -pos - 1;
+            int firstZeroPos = (pos < Z) ? zeros.get(pos) : n;
+
+            // substrings [l..r] with zero zeros (r < firstZeroPos)
+            ans += (firstZeroPos - l);
+
+            // enumerate up to 'limit' zeros starting from 'pos'
+            for (int k = pos; k < Z && k < pos + limit; k++) {
+                int zr = zeros.get(k);                
+                int nextZeroPos = (k + 1 < Z) ? zeros.get(k + 1) : n;
+                int zcount = k - pos + 1;             
+                int needOnes = zcount * zcount;
+
+                int onesNow = pref1[zr + 1] - pref1[l];
+                if (onesNow >= needOnes) {
+                    ans += (nextZeroPos - zr);
+                    continue;
+                }
+
+                int lo = zr + 1, hi = nextZeroPos - 1, best = -1;
+                while (lo <= hi) {
+                    int mid = (lo + hi) >>> 1;
+                    int ones = pref1[mid + 1] - pref1[l];
+                    if (ones >= needOnes) {
+                        best = mid;
+                        hi = mid - 1;
+                    } else lo = mid + 1;
+                }
+                if (best != -1) {
+                    ans += (nextZeroPos - best);
+                }
+            }
+        }
+        return (int) ans;
+    }
+}
