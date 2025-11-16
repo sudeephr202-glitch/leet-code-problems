@@ -1,0 +1,19 @@
+class Solution {
+    public int numSub(String s) {
+
+        long mod = 1000000007;
+        long count = 0;
+        long ans = 0;
+
+        for (char c : s.toCharArray()) {
+            if (c == '1') {
+                count++;                    // extend the streak of consecutive 1's
+                ans = (ans + count) % mod;  // add contribution
+            } else {
+                count = 0;                  // streak breaks
+            }
+        }
+
+        return (int) ans;
+    }
+}
