@@ -1,0 +1,39 @@
+import java.util.*;
+
+class Solution {
+    public List<String> letterCombinations(String digits) {
+        List<String> result = new ArrayList<>();
+        if (digits == null || digits.length() == 0) return result;
+
+        // Correct mapping for digits 0–9
+        String[] mapping = {
+            "",    // 0
+            "",    // 1
+            "abc", // 2
+            "def", // 3
+            "ghi", // 4
+            "jkl", // 5
+            "mno", // 6
+            "pqrs",// 7
+            "tuv", // 8
+            "wxyz" // 9
+        };
+
+        backtrack(0, new StringBuilder(), digits, mapping, result);
+        return result;
+    }
+
+    private void backtrack(int index, StringBuilder path, String digits, String[] mapping, List<String> result) {
+        if (index == digits.length()) {
+            result.add(path.toString());
+            return;
+        }
+
+        String letters = mapping[digits.charAt(index) - '0'];
+        for (char c : letters.toCharArray()) {
+            path.append(c);
+            backtrack(index + 1, path, digits, mapping, result);
+            path.deleteCharAt(path.length() - 1);
+        }
+    }
+}
