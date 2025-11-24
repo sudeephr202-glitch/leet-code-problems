@@ -1,0 +1,16 @@
+class Solution {
+    public List<Boolean> prefixesDivBy5(int[] nums) {
+        List<Boolean> result = new ArrayList<>();
+        int value = 0;
+
+        for (int bit : nums) {
+            // Shift previous value (multiply by 2) and add current bit
+            value = (value * 2 + bit) % 5;
+
+            // If value modulo 5 is 0, it's divisible
+            result.add(value == 0);
+        }
+
+        return result;
+    }
+}
