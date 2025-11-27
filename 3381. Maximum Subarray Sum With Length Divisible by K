@@ -1,0 +1,31 @@
+class Solution {
+    public long maxSubarraySum(int[] nums, int k) {   // <- NAME MATCHES DRIVER
+        int n = nums.length;
+
+        long[] minPrefix = new long[k];
+        boolean[] seen = new boolean[k];
+
+        long prefix = 0;
+        long result = Long.MIN_VALUE;
+
+        for (int i = 0; i < n; i++) {
+            prefix += nums[i];
+            int mod = (i + 1) % k;
+
+            if (seen[mod]) {
+                result = Math.max(result, prefix - minPrefix[mod]);
+            }
+
+            if (mod == 0) result = Math.max(result, prefix);
+
+            if (!seen[mod]) {
+                minPrefix[mod] = prefix;
+                seen[mod] = true;
+            } else {
+                minPrefix[mod] = Math.min(minPrefix[mod], prefix);
+            }
+        }
+
+        return result;
+    }
+}
