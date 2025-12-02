@@ -1,0 +1,33 @@
+class Solution {
+    static final long MOD = 1_000_000_007;
+
+    public int countTrapezoids(int[][] points) {
+        Map<Integer, Integer> map = new HashMap<>();
+
+        // Count points per y-level
+        for (int[] p : points) {
+            map.put(p[1], map.getOrDefault(p[1], 0) + 1);
+        }
+
+        // Compute S[i] = C(cnt, 2)
+        List<Long> arr = new ArrayList<>();
+        for (int cnt : map.values()) {
+            if (cnt >= 2) {
+                long s = (long) cnt * (cnt - 1) / 2;
+                arr.add(s % MOD);
+            }
+        }
+
+        // Need at least two y-levels with horizontal pairs
+        if (arr.size() < 2) return 0;
+
+        // Prefix sum method to compute sum of all pairs S[i] * S[j]
+        long ans = 0, prefix = 0;
+        for (long v : arr) {
+            ans = (ans + v * prefix) % MOD;
+            prefix = (prefix + v) % MOD;
+        }
+
+        return (int) ans;
+    }
+}
