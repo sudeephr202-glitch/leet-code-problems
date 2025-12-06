@@ -1,0 +1,45 @@
+class Solution {
+    public int countPartitions(int[] A, int k) {
+        int n = A.length, mod = 1_000_000_007;
+        int[] dp = new int[n + 1];
+
+        dp[0] = 1;        // dp[0] = 1 (empty prefix)
+        int acc = 1;      // acc = dp[0]
+
+        Deque<Integer> minq = new ArrayDeque<>();
+        Deque<Integer> maxq = new ArrayDeque<>();
+
+        for (int i = 0, j = 0; j < n; ++j) {
+
+            // maintain max deque (decreasing)
+            while (!maxq.isEmpty() && A[j] > A[maxq.peekLast()])
+                maxq.pollLast();
+            maxq.addLast(j);
+
+            // maintain min deque (increasing)
+            while (!minq.isEmpty() && A[j] < A[minq.peekLast()])
+                minq.pollLast();
+            minq.addLast(j);
+
+            // shrink left boundary until segment [i..j] is valid
+            while (A[maxq.peekFirst()] - A[minq.peekFirst()] > k) {
+                acc = (acc - dp[i] + mod) % mod;   // remove dp[i]
+                i++;
+
+                // pop indices that move out of window
+                if (!minq.isEmpty() && minq.peekFirst() < i)
+                    minq.pollFirst();
+                if (!maxq.isEmpty() && maxq.peekFirst() < i)
+                    maxq.pollFirst();
+            }
+
+            // dp[j+1] = acc (all valid partitions ending here)
+            dp[j + 1] = acc;
+
+            // update acc for next iteration
+            acc = (acc + dp[j + 1]) % mod;
+        }
+
+        return dp[n];
+    }
+}
