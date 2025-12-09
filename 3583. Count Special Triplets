@@ -1,0 +1,31 @@
+class Solution {
+    public int specialTriplets(int[] nums) {
+        final int MOD = 1_000_000_007;
+        int n = nums.length;
+
+        int maxVal = 200_000; // since nums[j] * 2 can be up to 200k
+        long[] left = new long[maxVal + 1];
+        long[] right = new long[maxVal + 1];
+
+        // Build right frequency
+        for (int x : nums) {
+            right[x]++;
+        }
+
+        long ans = 0;
+
+        for (int j = 0; j < n; j++) {
+            int x = nums[j];
+            right[x]--; // remove current element from right side
+
+            int target = x * 2;
+            if (target <= maxVal) {
+                ans = (ans + left[target] * right[target]) % MOD;
+            }
+
+            left[x]++; // add current element to left side
+        }
+
+        return (int) ans;
+    }
+}
