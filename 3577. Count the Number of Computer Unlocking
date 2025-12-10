@@ -1,0 +1,24 @@
+class Solution {
+    public int countPermutations(int[] complexity) {
+        long MOD = 1_000_000_007;
+        int n = complexity.length;
+        
+        // Step 1: Validate that index 0 is the strict minimum
+        // If any computer has complexity <= complexity[0], it's impossible to unlock.
+        int rootComplexity = complexity[0];
+        for (int i = 1; i < n; i++) {
+            if (complexity[i] <= rootComplexity) {
+                return 0;
+            }
+        }
+        
+        // Step 2: Calculate factorial of (n - 1)
+        // Since 0 is always first, we just need to permute the remaining n-1 elements.
+        long result = 1;
+        for (int i = 1; i < n; i++) { // effectively calculating (n-1)!
+            result = (result * i) % MOD;
+        }
+        
+        return (int) result;
+    }
+}
