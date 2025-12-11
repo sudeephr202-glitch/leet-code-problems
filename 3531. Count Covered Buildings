@@ -1,0 +1,53 @@
+import java.util.*;
+
+public class Solution {
+    public int countCoveredBuildings(int n, int[][] buildings) {
+        // rows: index = x (1..n) -> min and max y in that row
+        // cols: index = y (1..n) -> min and max x in that column
+        int[] rowMin = new int[n + 1];
+        int[] rowMax = new int[n + 1];
+        int[] colMin = new int[n + 1];
+        int[] colMax = new int[n + 1];
+
+        // Initialize mins to large, maxs to small
+        Arrays.fill(rowMin, n + 1);
+        Arrays.fill(colMin, n + 1);
+        Arrays.fill(rowMax, 0);
+        Arrays.fill(colMax, 0);
+
+        for (int[] b : buildings) {
+            int x = b[0], y = b[1];
+            if (y < rowMin[x]) rowMin[x] = y;
+            if (y > rowMax[x]) rowMax[x] = y;
+            if (x < colMin[y]) colMin[y] = x;
+            if (x > colMax[y]) colMax[y] = x;
+        }
+
+        int covered = 0;
+        for (int[] b : buildings) {
+            int x = b[0], y = b[1];
+            // must have at least one building left (y > rowMin[x]),
+            // right (y < rowMax[x]), above (x > colMin[y]), below (x < colMax[y])
+            if (y > rowMin[x] && y < rowMax[x] && x > colMin[y] && x < colMax[y]) {
+                covered++;
+            }
+        }
+        return covered;
+    }
+
+    // Example quick test (optional)
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int n1 = 3;
+        int[][] buildings1 = {{1,2},{2,2},{3,2},{2,1},{2,3}};
+        System.out.println(sol.countCoveredBuildings(n1, buildings1)); // expected 1
+
+        int n2 = 3;
+        int[][] buildings2 = {{1,1},{1,2},{2,1},{2,2}};
+        System.out.println(sol.countCoveredBuildings(n2, buildings2)); // expected 0
+
+        int n3 = 5;
+        int[][] buildings3 = {{1,3},{3,2},{3,3},{3,5},{5,3}};
+        System.out.println(sol.countCoveredBuildings(n3, buildings3)); // expected 1
+    }
+}
