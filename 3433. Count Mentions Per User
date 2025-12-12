@@ -1,0 +1,113 @@
+import java.util.*;
+
+/**
+ * Solution for "Count Mentions Per User" (LeetCode 3433 style).
+ *
+ * Assumes events are provided as List<List<String>> where each inner list has:
+ *   [ type, timestampString, dataString ]
+ *
+ * For same timestamp, OFFLINE should be processed before MESSAGE.
+ */
+public class Solution {
+    public int[] countMentions(int numberOfUsers, List<List<String>> events) {
+        boolean[] online = new boolean[numberOfUsers];
+        Arrays.fill(online, true);
+        int[] mentions = new int[numberOfUsers];
+
+        // Min-heap of (returnTime, userId)
+        PriorityQueue<long[]> returnHeap = new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));
+
+        // Convert events into objects and sort by timestamp; for same timestamp OFFLINE first
+        List<Event> evList = new ArrayList<>();
+        for (List<String> e : events) {
+            String t = e.get(0);
+            int ts = Integer.parseInt(e.get(1));
+            String data = e.get(2);
+            evList.add(new Event(t, ts, data));
+        }
+        evList.sort((a, b) -> {
+            if (a.ts != b.ts) return Integer.compare(a.ts, b.ts);
+            // OFFLINE should be before MESSAGE when timestamps equal
+            if (a.type.equals(b.type)) return 0;
+            if (a.type.equals("OFFLINE")) return -1;
+            if (b.type.equals("OFFLINE")) return 1;
+            return 0;
+        });
+
+        for (Event ev : evList) {
+            int ts = ev.ts;
+            // Restore users whose offline period ended at or before this timestamp
+            while (!returnHeap.isEmpty() && returnHeap.peek()[0] <= ts) {
+                long[] top = returnHeap.poll();
+                int uid = (int) top[1];
+                online[uid] = true;
+            }
+
+            if (ev.type.equals("OFFLINE")) {
+                int uid = Integer.parseInt(ev.data);
+                online[uid] = false;
+                returnHeap.add(new long[]{(long)ts + 60L, uid});
+            } else { // MESSAGE
+                String data = ev.data.trim();
+                // Tokenize by whitespace
+                String[] tokens = data.split("\\s+");
+                if (tokens.length == 1 && tokens[0].equals("ALL")) {
+                    for (int i = 0; i < numberOfUsers; ++i) mentions[i] += 1;
+                } else if (tokens.length == 1 && tokens[0].equals("HERE")) {
+                    for (int i = 0; i < numberOfUsers; ++i)
+                        if (online[i]) mentions[i] += 1;
+                } else {
+                    for (String tok : tokens) {
+                        if (tok.startsWith("id")) {
+                            int uid = Integer.parseInt(tok.substring(2));
+                            mentions[uid] += 1;
+                        }
+                        // else: ignore unknown tokens (problem guarantees format)
+                    }
+                }
+            }
+        }
+
+        return mentions;
+    }
+
+    // Helper event class
+    private static class Event {
+        String type;
+        int ts;
+        String data;
+        Event(String type, int ts, String data) {
+            this.type = type;
+            this.ts = ts;
+            this.data = data;
+        }
+    }
+
+    // --- Simple test harness with examples ---
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+
+        // Example 1
+        List<List<String>> ev1 = Arrays.asList(
+            Arrays.asList("MESSAGE","10","id1 id0"),
+            Arrays.asList("OFFLINE","11","0"),
+            Arrays.asList("MESSAGE","71","HERE")
+        );
+        System.out.println(Arrays.toString(sol.countMentions(2, ev1))); // [2,2]
+
+        // Example 2
+        List<List<String>> ev2 = Arrays.asList(
+            Arrays.asList("MESSAGE","10","id1 id0"),
+            Arrays.asList("OFFLINE","11","0"),
+            Arrays.asList("MESSAGE","12","ALL")
+        );
+        System.out.println(Arrays.toString(sol.countMentions(2, ev2))); // [2,2]
+
+        // Example 3
+        List<List<String>> ev3 = Arrays.asList(
+            Arrays.asList("OFFLINE","10","0"),
+            Arrays.asList("MESSAGE","12","HERE")
+        );
+        System.out.println(Arrays.toString(sol.countMentions(2, ev3))); // [0,1]
+    }
+}
