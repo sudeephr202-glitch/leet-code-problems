@@ -1,0 +1,42 @@
+class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int numberOfWays(String corridor) {
+        int totalSeats = 0;
+        for (char c : corridor.toCharArray()) {
+            if (c == 'S') totalSeats++;
+        }
+
+        // Invalid cases
+        if (totalSeats == 0 || totalSeats % 2 != 0) return 0;
+
+        long ans = 1;
+        int seatCount = 0;
+        int plantCount = 0;
+        boolean countingPlants = false;
+
+        for (char c : corridor.toCharArray()) {
+            if (c == 'S') {
+                seatCount++;
+
+                // finished one pair
+                if (seatCount == 2) {
+                    seatCount = 0;
+                    countingPlants = true;
+                }
+                // starting next pair → multiply choices
+                else if (seatCount == 1 && countingPlants) {
+                    ans = (ans * (plantCount + 1)) % MOD;
+                    plantCount = 0;
+                    countingPlants = false;
+                }
+            } else { // 'P'
+                if (countingPlants) {
+                    plantCount++;
+                }
+            }
+        }
+
+        return (int) ans;
+    }
+}
