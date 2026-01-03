@@ -1,0 +1,35 @@
+class Solution {
+    static final int MOD = 1_000_000_007;
+
+    public int numOfWays(int n) {
+        if (n == 1) return 12;
+
+        long[][] M = {{3, 2}, {2, 2}};
+        long[][] R = matPow(M, n - 1);
+
+        long sum = (R[0][0] + R[0][1] + R[1][0] + R[1][1]) % MOD;
+        return (int)(6 * sum % MOD);
+    }
+
+    private long[][] matPow(long[][] A, int exp) {
+        long[][] res = {{1, 0}, {0, 1}}; // Identity
+        while (exp > 0) {
+            if ((exp & 1) == 1) res = mul(res, A);
+            A = mul(A, A);
+            exp >>= 1;
+        }
+        return res;
+    }
+
+    private long[][] mul(long[][] A, long[][] B) {
+        long[][] C = new long[2][2];
+        for (int i = 0; i < 2; i++) {
+            for (int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    C[i][j] = (C[i][j] + A[i][k] * B[k][j]) % MOD;
+                }
+            }
+        }
+        return C;
+    }
+}
