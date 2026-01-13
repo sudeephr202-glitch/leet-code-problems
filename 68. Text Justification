@@ -1,0 +1,54 @@
+import java.util.*;
+
+class Solution {
+    public List<String> fullJustify(String[] words, int maxWidth) {
+        List<String> result = new ArrayList<>();
+        int i = 0;
+
+        while (i < words.length) {
+            int lineLen = 0;
+            int start = i;
+
+            // Step 1: Greedily fit as many words as possible
+            while (i < words.length &&
+                   lineLen + words[i].length() + (i - start) <= maxWidth) {
+                lineLen += words[i].length();
+                i++;
+            }
+
+            int wordCount = i - start;
+            int spaces = maxWidth - lineLen;
+            StringBuilder line = new StringBuilder();
+
+            // Step 2: Last line OR single word → left-justified
+            if (i == words.length || wordCount == 1) {
+                for (int j = start; j < i; j++) {
+                    line.append(words[j]);
+                    if (j < i - 1) line.append(" ");
+                }
+                while (line.length() < maxWidth) {
+                    line.append(" ");
+                }
+            } 
+            // Step 3: Fully justified
+            else {
+                int gaps = wordCount - 1;
+                int baseSpace = spaces / gaps;
+                int extraSpace = spaces % gaps;
+
+                for (int j = start; j < i - 1; j++) {
+                    line.append(words[j]);
+                    int spaceCount = baseSpace + (extraSpace-- > 0 ? 1 : 0);
+                    for (int s = 0; s < spaceCount; s++) {
+                        line.append(" ");
+                    }
+                }
+                line.append(words[i - 1]);
+            }
+
+            result.add(line.toString());
+        }
+
+        return result;
+    }
+}
