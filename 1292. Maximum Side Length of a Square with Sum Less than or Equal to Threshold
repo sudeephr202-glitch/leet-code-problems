@@ -1,0 +1,46 @@
+class Solution {
+    public int maxSideLength(int[][] mat, int threshold) {
+        int m = mat.length, n = mat[0].length;
+
+        // Build prefix sum array
+        int[][] prefix = new int[m + 1][n + 1];
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                prefix[i][j] = mat[i - 1][j - 1]
+                        + prefix[i - 1][j]
+                        + prefix[i][j - 1]
+                        - prefix[i - 1][j - 1];
+            }
+        }
+
+        int left = 0, right = Math.min(m, n);
+
+        // Binary search for maximum valid side length
+        while (left < right) {
+            int mid = (left + right + 1) / 2;
+            if (existsSquare(prefix, mid, threshold)) {
+                left = mid;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return left;
+    }
+
+    // Check if there exists a k x k square with sum <= threshold
+    private boolean existsSquare(int[][] prefix, int k, int threshold) {
+        for (int i = k; i < prefix.length; i++) {
+            for (int j = k; j < prefix[0].length; j++) {
+                int sum = prefix[i][j]
+                        - prefix[i - k][j]
+                        - prefix[i][j - k]
+                        + prefix[i - k][j - k];
+                if (sum <= threshold) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
